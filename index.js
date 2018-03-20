@@ -1,20 +1,18 @@
+const lineRe = /([\s\S]+?)($|\n#|\n(?:\s*\n|$)+)/g
 const headLineRe = /^(#+)\s(\S+)/g
-const codeBlockRe = /^\`+(\\n|\w+)([\S\s]+)([^\`]+)/g
-const listRe = /(?:\*|\+|\-)\s(\w+?)(?:\w+)/g
+const codeBlockRe = /`+(\w+)?([^`]*)`+/g
+const listRe = /(?:\*|\+|\-)\s(\w+)/g
+const linkRe = /\[(.*)\]\((.*)\)/g
 
 exports.parse = mdText => {
-  const lines = splitLines(mdText)
-  const json = lines.map(processLine)
-  return json
+  return splitLines(mdText).map(processLine)
 }
 
 function splitLines(mdText) {
-  const re = /([\s\S]+?)($|\n#|\n(?:\s*\n|$)+)/g
   const lines = []
-
   let m
 
-  while ((m = re.exec(mdText)) != null) {
+  while ((m = lineRe.exec(mdText)) != null) {
     lines.push(m[1])
   }
 
@@ -23,6 +21,13 @@ function splitLines(mdText) {
 
 function processLine(line) {
   let m
+  if ((m = linkRe.exec(line)) !== null) {
+    return {
+      label: m[1],
+      href: m[2],
+      type: 'link'
+    }
+  }
   if ((m = headLineRe.exec(line)) !== null) {
     return {
       content: m[2],
@@ -38,8 +43,12 @@ function processLine(line) {
     }
   }
   if ((m = listRe.exec(line)) !== null) {
+    const listCache = [m[1]]
+    while ((m = listRe.exec(line)) !== null) {
+      listCache.push(m[1])
+    }
     return {
-      content: line.match(listRe).map(s => s.replace(/(\*|\+|\-)\s/, '')),
+      content: listCache,
       type: 'list'
     }
   }

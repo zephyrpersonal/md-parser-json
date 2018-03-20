@@ -4,6 +4,8 @@ introduce the new md parser
 
 ## Sub Title
 
+[baidu](http://baidu.com)
+
 ```javascript
 var a = 1
 a()
@@ -15,7 +17,7 @@ a()
 
 ### Sub Sub Title
 
-```bash
+```
 npm install
 npm run dev
 ```
